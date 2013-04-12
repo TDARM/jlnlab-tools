@@ -22,12 +22,13 @@ http://www.hobbyking.com/hobbyking/store/__25087__Arduino_LCD_Keypad_Shield.html
 
 */
 // Author : Jean-Louis Naudin (JLN) 
-// updates: last update 2013-04-11
+// updates: last update 2013-04-12
 //
 // 2013-04-08: Start of the project
 // 2013-04-09: Hardware build
 // 2013-04-10: RPM measurement and autostart feature at low RPM
 // 2013-04-11: First release
+// 2013-04-12: RPM smoothing improvement (avg on 10 samples)
 //   
 
 /*--------------------------------------------------------------------------------------
@@ -62,7 +63,7 @@ static boolean running       = false;
 static int rpm     = 0;
 volatile float time = 0;
 volatile float time_last = 0;
-volatile int rpm_array[5] = {0,0,0,0,0};
+volatile int rpm_array[10] = {0,0,0,0,0,0,0,0,0,0};
 
 static unsigned long turn    = 0;
 static int ptime             = 0;
@@ -207,14 +208,20 @@ void display_pulse()
 void calc_rpm()
 {  
   if(time > 0)
-  {  // 5 Samples for smoothing the datas
+  {  // 10 Samples for smoothing the datas
       rpm_array[0] = rpm_array[1];
       rpm_array[1] = rpm_array[2];
       rpm_array[2] = rpm_array[3];
       rpm_array[3] = rpm_array[4];
-      rpm_array[4] = 60*(1000000/(time*NUMB_POLES));    
+      rpm_array[4] = rpm_array[5];
+      rpm_array[5] = rpm_array[6];
+      rpm_array[6] = rpm_array[7];
+      rpm_array[7] = rpm_array[8];
+      rpm_array[8] = rpm_array[9];     
+      rpm_array[9] = 60*(1000000/(time*NUMB_POLES));    
     // compute the avg rpm
-      rpm = (rpm_array[0] + rpm_array[1] + rpm_array[2] + rpm_array[3] + rpm_array[4]) / 5;
+      rpm = (rpm_array[0] + rpm_array[1] + rpm_array[2] + rpm_array[3] + rpm_array[4] 
+      + rpm_array[5] + rpm_array[6] + rpm_array[7] + rpm_array[8] + rpm_array[9]) / 10;
   }
 }
 
